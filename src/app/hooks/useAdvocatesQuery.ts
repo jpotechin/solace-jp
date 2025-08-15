@@ -4,9 +4,19 @@ import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'next/navigation'
 import type { Advocate } from '@/types/advocate'
 
+type PaginationInfo = {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
+}
+
 type AdvocateApiResponse = {
   data: Advocate[]
-  total: number
+  pagination: PaginationInfo
+  source: 'static' | 'database'
 }
 
 export function useAdvocatesQuery() {
@@ -22,7 +32,7 @@ export function useAdvocatesQuery() {
       if (!res.ok) throw new Error('Failed to fetch advocates')
       return res.json()
     },
-    placeholderData: (previousData) => previousData, // ✅ keeps previous data visible while fetching new
+    placeholderData: (previousData) => previousData,
     staleTime: 1000 * 5
   })
 

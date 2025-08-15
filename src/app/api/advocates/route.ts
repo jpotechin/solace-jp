@@ -32,26 +32,32 @@ export async function GET(request: Request) {
     // Try database first, fallback to static data
     try {
       if (db) {
-        // Build query
-        let query = db.select().from(advocates);
-
-        // Apply DB-level search filtering
-        if (search) {
-          query = query.where(
-            or(
-              like(advocates.firstName, `%${search}%`),
-              like(advocates.lastName, `%${search}%`),
-              like(advocates.city, `%${search}%`),
-              like(advocates.degree, `%${search}%`),
-              like(advocates.specialties, `%${search}%`),
-              sql`${advocates.yearsOfExperience}::text LIKE ${`%${search}%`}`
-            )
-          );
-        }
-
-        // Get paginated results
         const offset = (page - 1) * limit;
-        const paginated = await query.limit(limit).offset(offset);
+        
+        let paginated;
+        if (search) {
+          paginated = await db
+            .select()
+            .from(advocates)
+            .where(
+              or(
+                like(advocates.firstName, `%${search}%`),
+                like(advocates.lastName, `%${search}%`),
+                like(advocates.city, `%${search}%`),
+                like(advocates.degree, `%${search}%`),
+                like(advocates.specialties, `%${search}%`),
+                sql`${advocates.yearsOfExperience}::text LIKE ${`%${search}%`}`
+              )
+            )
+            .limit(limit)
+            .offset(offset);
+        } else {
+          paginated = await db
+            .select()
+            .from(advocates)
+            .limit(limit)
+            .offset(offset);
+        }
 
         // Get total count for pagination
         const totalQuery = await db
@@ -60,7 +66,7 @@ export async function GET(request: Request) {
         const dbTotal = Number(totalQuery[0]?.count || 0);
 
         // Map database results to match Advocate type
-        finalData = paginated.map((adv: any) => ({
+        finalData = paginated.map((adv) => ({
           id: adv.id || 0,
           firstName: adv.firstName || '',
           lastName: adv.lastName || '',
