@@ -9,6 +9,13 @@ import {
 } from '@tanstack/react-table';
 import { Button } from '@/app/components/ui/button';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/app/components/ui/select';
+import {
   Table,
   TableBody,
   TableCell,
@@ -26,7 +33,60 @@ type Props<TData> = {
   total: number;
   loading: boolean;
   onPageChange: (page: number) => void;
+  onLimitChange: (limit: number) => void;
 };
+
+// Mobile Card Component
+function AdvocateCard({ advocate }: { advocate: Advocate }) {
+  const phoneNumber = advocate.phoneNumber
+    .toString()
+    .replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+
+  return (
+    <div className='bg-white rounded-xl border border-blue-200 p-6 shadow-sm hover:shadow-md transition-shadow'>
+      <div className='flex items-start justify-between mb-4'>
+        <div>
+          <h3 className='text-lg font-semibold text-gray-900'>
+            {advocate.firstName} {advocate.lastName}
+          </h3>
+          <p className='text-gray-600'>{advocate.city}</p>
+        </div>
+        <div className='flex flex-col items-end gap-2'>
+          <span className='inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200'>
+            {advocate.degree}
+          </span>
+          <span className='inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200'>
+            {advocate.yearsOfExperience} years
+          </span>
+        </div>
+      </div>
+
+      <div className='mb-4'>
+        <h4 className='text-sm font-medium text-gray-700 mb-2'>Specialties</h4>
+        <div className='flex flex-wrap gap-1.5'>
+          {advocate.specialties?.map((specialty, index) => (
+            <span
+              key={index}
+              className='inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200'
+            >
+              {specialty}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className='flex items-center justify-between'>
+        <a
+          href={`tel:${advocate.phoneNumber}`}
+          className='font-mono text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer'
+          title='Click to call'
+        >
+          {phoneNumber}
+        </a>
+      </div>
+    </div>
+  );
+}
 
 export function AdvocatesTable<TData>({
   data,
@@ -36,6 +96,7 @@ export function AdvocatesTable<TData>({
   total,
   loading,
   onPageChange,
+  onLimitChange,
 }: Props<TData>) {
   const table = useReactTable({
     data,
@@ -99,9 +160,14 @@ export function AdvocatesTable<TData>({
     );
   }
 
+  const totalPages = Math.ceil(total / limit);
+  const hasNextPage = page < totalPages;
+  const hasPrevPage = page > 1;
+
   return (
     <div className='w-full'>
-      <div className='block'>
+      {/* Desktop Table - Hidden on mobile and small screens */}
+      <div className='hidden xl:block'>
         <div className='overflow-x-auto rounded-xl border-0 bg-gradient-to-br from-white via-blue-50 to-indigo-50'>
           <div className='min-w-[950px]'>
             <Table>
@@ -149,32 +215,62 @@ export function AdvocatesTable<TData>({
         </div>
       </div>
 
-      <div className='flex flex-col sm:flex-row justify-between items-center mt-8 gap-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200'>
-        <div className='text-sm text-blue-700'>
-          <span className='font-semibold text-blue-900'>
-            Showing {(page - 1) * limit + 1}
-          </span>
-          <span className='mx-2'>to</span>
-          <span className='font-semibold text-blue-900'>
-            {Math.min(page * limit, total)}
-          </span>
-          <span className='mx-2'>of</span>
-          <span className='font-semibold text-blue-900'>
-            {total.toLocaleString()}
-          </span>
-          <span className='ml-2 text-blue-600'>advocates</span>
+      {/* Mobile/Tablet Cards - Hidden on xl screens and above */}
+      <div className='xl:hidden space-y-4'>
+        {data.map((advocate, index) => (
+          <AdvocateCard key={index} advocate={advocate as Advocate} />
+        ))}
+      </div>
+
+      {/* Enhanced pagination controls */}
+      <div className='flex flex-col gap-4 mt-8 p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200'>
+        {/* Top row - Data summary and row selector */}
+        <div className='flex flex-col sm:flex-row items-center justify-between gap-4'>
+          <div className='text-sm text-blue-700 text-center sm:text-left'>
+            <span className='font-semibold text-blue-900'>
+              Showing {(page - 1) * limit + 1}
+            </span>
+            <span className='mx-2'>to</span>
+            <span className='font-semibold text-blue-900'>
+              {Math.min(page * limit, total)}
+            </span>
+            <span className='mx-2'>of</span>
+            <span className='font-semibold text-blue-900'>
+              {total.toLocaleString()}
+            </span>
+            <span className='ml-2 text-blue-600'>advocates</span>
+          </div>
+
+          {/* Row Limit Selector */}
+          <div className='flex items-center gap-2'>
+            <Select
+              value={limit.toString()}
+              onValueChange={value => onLimitChange(Number(value))}
+            >
+              <SelectTrigger className='w-16 h-7 border-gray-300 focus:border-gray-400 focus:ring-gray-400 bg-white rounded-md text-sm px-2'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='10'>10</SelectItem>
+                <SelectItem value='25'>25</SelectItem>
+                <SelectItem value='50'>50</SelectItem>
+                <SelectItem value='100'>100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        <div className='flex items-center gap-3'>
+        {/* Bottom row - Pagination controls */}
+        <div className='flex items-center justify-center gap-2 sm:gap-3'>
           <Button
             onClick={() => onPageChange(page - 1)}
-            disabled={page === 1}
+            disabled={!hasPrevPage}
             variant='outline'
             size='sm'
-            className='px-5 py-2 border-blue-300 hover:bg-blue-100 hover:border-blue-400 transition-all duration-200'
+            className='px-3 sm:px-4 py-2 border-blue-300 hover:bg-blue-100 hover:border-blue-400 transition-all duration-200 disabled:opacity-50 text-xs sm:text-sm'
           >
             <svg
-              className='w-4 h-4 mr-2'
+              className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2'
               fill='none'
               stroke='currentColor'
               viewBox='0 0 24 24'
@@ -186,25 +282,27 @@ export function AdvocatesTable<TData>({
                 d='M15 19l-7-7 7-7'
               />
             </svg>
-            Previous
+            <span className='hidden sm:inline'>Previous</span>
+            <span className='sm:hidden'>Prev</span>
           </Button>
 
-          <div className='flex items-center gap-2 px-5 py-2 bg-white rounded-lg border border-blue-200 shadow-sm'>
-            <span className='text-sm font-semibold text-blue-700'>
-              Page {page} of {Math.ceil(total / limit)}
+          <div className='flex items-center gap-2 px-3 sm:px-4 py-2 bg-white rounded-lg border border-blue-200 shadow-sm min-w-[100px] sm:min-w-[120px] justify-center'>
+            <span className='text-xs sm:text-sm font-semibold text-blue-700'>
+              Page {page} of {totalPages}
             </span>
           </div>
 
           <Button
             onClick={() => onPageChange(page + 1)}
-            disabled={page * limit >= total}
+            disabled={!hasNextPage}
             variant='outline'
             size='sm'
-            className='px-5 py-2 border-blue-300 hover:bg-blue-100 hover:border-blue-400 transition-all duration-200'
+            className='px-3 sm:px-4 py-2 border-blue-300 hover:bg-blue-100 hover:border-blue-400 transition-all duration-200 disabled:opacity-50 text-xs sm:text-sm'
           >
-            Next
+            <span className='hidden sm:inline'>Next</span>
+            <span className='sm:hidden'>Next</span>
             <svg
-              className='w-4 h-4 ml-2'
+              className='w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2'
               fill='none'
               stroke='currentColor'
               viewBox='0 0 24 24'
