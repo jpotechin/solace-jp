@@ -192,14 +192,14 @@ The advocates search system provides comprehensive, multi-field search capabilit
 - **Name**: First and last name (partial matching)
 - **Location**: City-based search
 - **Education**: Degree and qualifications
-- **Specialties**: Legal practice areas
+- **Specialties**: Health practice areas
 - **Experience**: Years of practice
 - **Contact**: Phone number search
 
 ### Search Features
 
 - **Case-insensitive**: Search works regardless of capitalization
-- **Partial matching**: Find "John" in "Johnny" or "criminal" in "Criminal Law"
+- **Partial matching**: Find "John" in "Johnny" or "cardio" in "Cardiology"
 - **Multi-field**: Single search term searches across all relevant fields
 - **Database-optimized**: Uses PostgreSQL LIKE queries for performance
 - **Fallback support**: Works with both database and static data
