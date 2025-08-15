@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export default function Home() {
   const [advocates, setAdvocates] = useState([]);
   const [filteredAdvocates, setFilteredAdvocates] = useState([]);
 
   useEffect(() => {
-    console.log("fetching advocates...");
-    fetch("/api/advocates").then((response) => {
-      response.json().then((jsonResponse) => {
+    console.log('fetching advocates...');
+    fetch('/api/advocates').then(response => {
+      response.json().then(jsonResponse => {
         setAdvocates(jsonResponse.data);
         setFilteredAdvocates(jsonResponse.data);
       });
     });
   }, []);
 
-  const onChange = (e) => {
+  const onChange = e => {
     const searchTerm = e.target.value;
 
-    document.getElementById("search-term").innerHTML = searchTerm;
+    document.getElementById('search-term').innerHTML = searchTerm;
 
-    console.log("filtering advocates...");
-    const filteredAdvocates = advocates.filter((advocate) => {
+    console.log('filtering advocates...');
+    const filteredAdvocates = advocates.filter(advocate => {
       return (
         advocate.firstName.includes(searchTerm) ||
         advocate.lastName.includes(searchTerm) ||
@@ -42,16 +42,16 @@ export default function Home() {
   };
 
   return (
-    <main style={{ margin: "24px" }}>
+    <main style={{ margin: '24px' }}>
       <h1>Solace Advocates</h1>
       <br />
       <br />
       <div>
         <p>Search</p>
         <p>
-          Searching for: <span id="search-term"></span>
+          Searching for: <span id='search-term'></span>
         </p>
-        <input style={{ border: "1px solid black" }} onChange={onChange} />
+        <input style={{ border: '1px solid black' }} onChange={onChange} />
         <button onClick={onClick}>Reset Search</button>
       </div>
       <br />
@@ -67,7 +67,7 @@ export default function Home() {
           <th>Phone Number</th>
         </thead>
         <tbody>
-          {filteredAdvocates.map((advocate) => {
+          {filteredAdvocates.map(advocate => {
             return (
               <tr>
                 <td>{advocate.firstName}</td>
@@ -75,7 +75,7 @@ export default function Home() {
                 <td>{advocate.city}</td>
                 <td>{advocate.degree}</td>
                 <td>
-                  {advocate.specialties.map((s) => (
+                  {advocate.specialties.map(s => (
                     <div>{s}</div>
                   ))}
                 </td>
