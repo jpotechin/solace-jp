@@ -1,20 +1,12 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
-const setup = () => {
-  if (!process.env.DATABASE_URL) {
-    console.error('DATABASE_URL is not set');
-    return {
-      select: () => ({
-        from: () => [],
-      }),
-    };
-  }
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is not set in .env");
+}
 
-  // for query purposes
-  const queryClient = postgres(process.env.DATABASE_URL);
-  const db = drizzle(queryClient);
-  return db;
-};
+// Create the Postgres client
+const queryClient = postgres(process.env.DATABASE_URL);
 
-export default setup();
+// Create the Drizzle DB instance
+export const db = drizzle(queryClient);
